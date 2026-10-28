@@ -34,6 +34,9 @@ def public_profile(p: dict) -> dict:
     p = dict(p)
     p["documents"] = [{k: v for k, v in d.items() if k != "path"} | {"has_file": bool(d.get("path"))}
                       for d in p.get("documents", [])]
+    for k in ("photo", "approved_photo"):
+        if p.get(k):
+            p[k] = {x: y for x, y in p[k].items() if x != "path"}
     return p
 
 

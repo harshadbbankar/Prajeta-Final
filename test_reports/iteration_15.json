@@ -1,0 +1,42 @@
+{
+  "summary": "Driver Photo Profiles feature tested end-to-end. BACKEND: 18/18 pytest pass (tests/test_driver_photo_iter15.py). Covered: upload of JPEG/PNG/WEBP returns PENDING with no 'path'. PDF, text and files over 8MB return 400; a customer upload returns 403. The private file endpoint returns 200 for the driver and the owner, 404 for a customer or another driver, and 401 with no token. The public endpoint returns 404 while PENDING or REJECTED and 200 once APPROVED. Reject with a blank reason returns 400. Reject with a reason gives REJECTED with the reason and sends a 'not approved' notification. Approve gives APPROVED with reason null and sends a 'Profile photo approved' notification. Customer and driver get 403 on review. The driver profile, the admin driver detail and the admin drivers list have no 'path'. Booking driver.photo_url is null before approval and set after. If an approved photo is replaced, photo_url keeps pointing to the old photo while the new one is pending, and also after the new one is rejected; approving a third photo switches photo_url and makes the old one 404 publicly. FRONTEND (390x844): Driver home shows a compact driver-photo-card while there is no photo, and again while a replacement is pending; it is hidden once approved. On the Profile tab, driver-photo-library opens a file chooser (expect_file_chooser); after upload the toast shows and driver-photo-status reads 'UNDER REVIEW', with driver-photo-image loaded (naturalWidth 300). After a reject, the status reads 'NOT APPROVED' and driver-photo-reason shows the reason. In the ERP at /erp/driver/{id}, admin-photo-card, admin-photo-image (loaded), admin-photo-reason, admin-photo-approve and admin-photo-reject are present. Reject with no reason shows a toast and the status stays PENDING. Approve gives APPROVED, a toast, and the admin-photo-revoke button. Customer booking detail driver-card shows driver-photo loaded from /api/public/driver-photo/{id}; after a revoke it falls back to the person icon. No page errors. The camera path and native permission sheets were not tested (native only).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/driver/photo", "issue": "The file type is checked only against the client-sent Content-Type, never against the file's magic bytes. Any file labelled image/jpeg is stored, served to staff and, once approved, served publicly with that type. Verify the image header (e.g. PIL.Image.open/verify) before storing."},
+      {"endpoint": "POST /api/driver/photo", "issue": "image/heic is accepted, but browsers (the ERP on web, and customers on web) can't render HEIC, so a reviewer would see a blank admin-photo-image. Convert HEIC to JPEG on upload, or drop HEIC. The 400 message also omits HEIC ('Upload a JPG, PNG or WEBP photo')."},
+      {"endpoint": "POST /api/admin/drivers/{id}/photo", "issue": "While a replacement is pending or rejected, staff can't revoke the previously approved photo that customers still see. Reject only affects the new photo, and approved_photo is only cleared on approve. Consider a revoke-all option."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "ERP drivers list / dashboard", "issues": ["There is no queue, filter or badge for drivers with a PENDING photo. Staff only get a notification and must open each driver to find photos to review. Add a 'Photos to review' filter to admin/drivers or the kyc-queue-card."]},
+      {"screen": "Driver profile / home DriverPhotoCard", "issues": ["driver-photo-camera and driver-photo-library are 40px tall (below the 44px minimum touch target).", "When a replacement is Under review or Not approved, the driver isn't told that customers still see the previously approved photo.", "The profile header avatar ('RK' initials) and the driver home header avatar don't use the approved photo."]},
+      {"screen": "ERP PhotoReview (approved state)", "issues": ["The 'Revoke (reject)' button is placed above its 'Reason for revoking' field; the field should come first, as it does in the pending state."]},
+      {"screen": "Customer booking driver-card", "issues": ["driver-photo uses loading=lazy and has no placeholder, so it shows as an empty circle for 1-3 seconds before the image loads. Add a placeholder or person icon behind it."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_driver_photo_iter15.py", "/app/test_reports/pytest/pytest_iter15.xml", "/app/backend/tests/clear_otp_iter14.py"],
+  "action_items": [
+    "Optional (security hardening): check the image magic bytes in upload_photo instead of trusting the client-sent Content-Type.",
+    "Convert HEIC to JPEG (or reject HEIC) so the ERP and web can render it; add HEIC to the error text if you keep it.",
+    "Add an ERP 'photo pending review' filter, badge or queue.",
+    "Make the photo buttons at least 44px tall; tell the driver that their previous approved photo is still shown while a replacement is pending or rejected; consider using the approved photo in the driver avatars.",
+    "Add a placeholder or icon behind the driver-photo image while it loads; put the revoke reason field before the Revoke button."
+  ],
+  "critical_code_review_comments": [
+    "photo_routes.public_photo line 71 has a hard-to-read one-liner with an identity check (`x is p.get('approved_photo')`). It works, but split it for clarity.",
+    "Tokens are passed in the query string (authedUrl ?token=) for private photos. This is the existing pattern, but the token ends up in proxy/CDN logs and in the image cache keys.",
+    "No deprecated Expo packages were found (no expo-av, expo-barcode-scanner or expo-background-fetch). The expo-image-picker plugin and the iOS NSCamera/NSPhotoLibrary usage strings are configured in app.json.",
+    "backend.err.log has one old 'NameError: photo_routes not defined' from a reload during development. The current server is healthy."
+  ],
+  "updated_files": ["/app/backend/tests/test_driver_photo_iter15.py (new)"],
+  "success_rate": {"backend": "100% (18/18)", "frontend": "100% of requested flows (camera/native permission paths not testable on web)"},
+  "seed_data_creation": "Driver 9000000002 now has an APPROVED profile photo (a synthetic test image) after the UI flow. Rejection reasons are prefixed TEST_. The pytest teardown restores the photo state that existed before the test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run python /app/backend/tests/clear_otp_iter14.py before each UI login. Driver user id is ba50c34d-b1b4-4cc3-a7ae-4b2ed2a9bd14; customer booking PRJ-AYXRV6G6 (id 157edc78-e15b-4f9f-9d96-dedeb86764a2) is assigned to that driver. On web the gallery upload works with page.expect_file_chooser around the driver-photo-library click, then fc.set_files(path). driver-photo is lazy-loaded, so wait about 5s before checking naturalWidth. The browser occasionally SIGSEGVs on launch; just retry."
+}

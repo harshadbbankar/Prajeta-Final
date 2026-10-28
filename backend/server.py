@@ -31,6 +31,7 @@ import sos_routes
 import google_push_routes
 import wallet_routes
 import garage_routes
+import photo_routes
 import asyncio
 from licence import licence_loop
 
@@ -371,7 +372,8 @@ async def booking_detail(booking_id: str, user: dict = Depends(require_customer)
         if p:
             driver = {"name": p["name"], "phone": p["phone"] if b["status"] != "COMPLETED" else None,
                       "experience_years": p.get("experience_years"), "rating": p.get("rating"), "verified": True,
-                      "badge": p.get("badge"), "badge_label": BADGES.get(p.get("badge") or "", {}).get("label")}
+                      "badge": p.get("badge"), "badge_label": BADGES.get(p.get("badge") or "", {}).get("label"),
+                      "photo_url": photo_routes.approved_photo_url(p)}
     return {**customer_view(b), "events": events, "payments": payments, "review": review, "driver": driver}
 
 
@@ -756,6 +758,7 @@ app.include_router(sos_routes.router)
 app.include_router(google_push_routes.router)
 app.include_router(wallet_routes.router)
 app.include_router(garage_routes.router)
+app.include_router(photo_routes.router)
 app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 

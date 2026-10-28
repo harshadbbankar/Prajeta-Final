@@ -124,10 +124,12 @@ async def dashboard(period: str = "30d", city_id: str = "", service_id: str = ""
 
 # ------------------------------------------------------------------ drivers
 @router.get("/drivers")
-async def drivers(status: str = "", q: str = "", city_id: str = "", user: dict = Depends(VERIFY)):
+async def drivers(status: str = "", q: str = "", city_id: str = "", photo_status: str = "", user: dict = Depends(VERIFY)):
     query = {}
     if status:
         query["status"] = status
+    if photo_status:
+        query["photo.status"] = photo_status
     if city_id:
         query["city_id"] = city_id
     if q:
@@ -136,6 +138,9 @@ async def drivers(status: str = "", q: str = "", city_id: str = "", user: dict =
     async for p in db.driver_profiles.find(query, {"_id": 0}).sort("created_at", -1).limit(300):
         p["documents"] = [{k: v for k, v in d.items() if k != "path"} | {"has_file": bool(d.get("path"))} for d in p.get("documents", [])]
         p.pop("payout_bank", None)
+        p.pop("approved_photo", None)
+        if p.get("photo"):
+            p["photo"] = {x: y for x, y in p["photo"].items() if x != "path"}
         out.append(p)
     return out
 
@@ -146,6 +151,9 @@ async def driver_detail(user_id: str, user: dict = Depends(VERIFY)):
     if not p:
         raise HTTPException(404, "Driver not found")
     p["documents"] = [{k: v for k, v in d.items() if k != "path"} | {"has_file": bool(d.get("path"))} for d in p.get("documents", [])]
+    for k in ("photo", "approved_photo"):
+        if p.get(k):
+            p[k] = {x: y for x, y in p[k].items() if x != "path"}
     jobs = [{k: b.get(k) for k in ("id", "ref", "service_name", "date", "status", "driver_payout", "driver_adjustment", "badge_bonus")}
             async for b in db.bookings.find({"driver_id": user_id}, {"_id": 0}).sort("date", -1).limit(50)]
     offers = defaultdict(int)

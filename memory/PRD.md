@@ -20,6 +20,10 @@ User choices: name Prajeta · phone login via WhatsApp OTP · Razorpay test mode
 - Owner intelligence: KPIs vs previous period, P&L, service & city profitability, rule-based insights, action plan, pricing simulator, CSV export, data-quality warnings, KPI definitions.
 - Synthetic demo history seeded (flagged is_demo).
 
+## Iteration 15 (2026-06) — Driver photo profiles
+- photo_routes.py: POST /api/driver/photo (JPG/PNG/WEBP checked by file header, 8MB), GET /api/driver/photo/file/{id} (driver/staff), GET /api/public/driver-photo/{id} (approved only), POST /api/admin/drivers/{id}/photo {approve, reason}. Previous approved photo stays visible until a replacement is approved. /admin/drivers?photo_status=PENDING.
+- UI: DriverPhotoCard (selfie/gallery, permission pre-prompt + Open Settings) on driver profile + compact on home; ERP PhotoReview on driver page + "Photos to review" in dashboard KYC card; customer booking driver-card shows approved photo.
+
 ## Iteration 14 (2026-06) — "Executive Mobility & Telematics" redesign (zip 2)
 - Canvas #F3F4F6, cockpit dark tokens (cockpit/cockpitCard/cockpitBorder/gold). Red logo + name (BrandLogo) everywhere; red app icon/splash.
 - Customer home: brand bar, chauffeur photo hero, SERVICE CATEGORIES select grid, Book Private Chauffeur card (gear segmented, pickup input, date/time sheets) → wizard prefilled (pickup/trans params).

@@ -49,6 +49,7 @@ export default function AdminDashboard() {
     enabled: isAdmin && can(user!.role, "dispatch"),
   });
   const kyc = useQuery({ queryKey: ["admin-kyc"], queryFn: () => api<any[]>(`/admin/drivers?status=SUBMITTED`), enabled: isAdmin && can(user!.role, "drivers") });
+  const photos = useQuery({ queryKey: ["admin-photos"], queryFn: () => api<any[]>(`/admin/drivers?photo_status=PENDING`), enabled: isAdmin && can(user!.role, "drivers") });
   if (!ready) return <Loader />;
   if (!user || !isAdmin) return <Redirect href="/login" />;
   const d = q.data;
@@ -157,6 +158,18 @@ export default function AdminDashboard() {
               </Row>
             ))}
             {!(kyc.data ?? []).length ? <Txt v="caption">No applications waiting.</Txt> : null}
+            {(photos.data ?? []).length ? (
+              <View style={{ gap: space.sm, marginTop: space.sm }} testID="photo-review-queue">
+                <Txt v="label" color={colors.onSurface}>Photos to review ({photos.data!.length})</Txt>
+                {photos.data!.slice(0, 4).map((x) => (
+                  <Row key={x.user_id} gap={space.md} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: space.sm, paddingLeft: space.md }}>
+                    <Ionicons name="camera-outline" size={18} color={colors.warning} />
+                    <Txt v="bodyBold" style={{ flex: 1 }} numberOfLines={1}>{x.name}</Txt>
+                    <Btn small variant="outline" title="Review" onPress={() => router.push(`/erp/driver/${x.user_id}` as any)} testID={`photo-review-${x.user_id}`} />
+                  </Row>
+                ))}
+              </View>
+            ) : null}
           </View>
           <View style={{ padding: space.lg, paddingTop: 0 }}>
             <Btn small variant="outline" title="Verify drivers" icon="shield-checkmark-outline" onPress={() => router.push("/admin/drivers")} testID="dash-drivers-link" />

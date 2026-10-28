@@ -6,6 +6,7 @@ import { RefreshControl, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api, authedUrl } from "@/src/api";
+import { PhotoReview } from "@/src/components/PhotoReview";
 import { fmtDate } from "@/src/hooks";
 import { space, useTheme } from "@/src/theme";
 import { Btn, Card, Chip, Field, Header, KV, Loader, Row, Sheet, Stat, StatusBadge, Txt, money, useToast } from "@/src/ui";
@@ -47,6 +48,7 @@ export default function AdminDriver() {
           <Stat label="Accepted / declined" value={`${d.offer_stats.ACCEPTED ?? 0} / ${d.offer_stats.DECLINED ?? 0}`} />
           <Stat label="Complaints" value={String(d.complaints)} />
         </View>
+        <PhotoReview driverId={id} photo={d.photo} onDone={() => q.refetch()} />
         <Card style={{ gap: 2 }}>
           <Txt v="h3" style={{ marginBottom: space.sm }}>Profile</Txt>
           <KV k="Address" v={d.address || "—"} />

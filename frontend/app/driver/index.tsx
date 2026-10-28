@@ -7,6 +7,7 @@ import { Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
+import { DriverAvatar, DriverPhotoCard } from "@/src/components/DriverPhotoCard";
 import { LocationShare } from "@/src/components/LocationShare";
 import { AddPhone } from "@/src/components/AddPhone";
 import { useAuth } from "@/src/auth";
@@ -81,9 +82,7 @@ export default function DriverHome() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
       <View style={{ paddingTop: insets.top + space.sm, paddingBottom: space.sm, paddingHorizontal: space.lg, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: "row", alignItems: "center", gap: space.sm }}>
-        <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.tint, borderWidth: 1, borderColor: colors.borderStrong, alignItems: "center", justifyContent: "center" }}>
-          <Ionicons name="person" size={20} color={colors.onSurface} />
-        </View>
+        <DriverAvatar profile={p} size={40} />
         <View style={{ flex: 1, gap: 2 }}>
           <Txt v="h3" style={{ fontFamily: fonts.bold, fontSize: 15, lineHeight: 19 }} testID="driver-name" numberOfLines={2}>
             {p?.name || user.name || "Driver"}
@@ -184,6 +183,7 @@ export default function DriverHome() {
         ) : null}
 
         {approved && p.online && !active.length ? <LocationShare presence /> : null}
+        {approved ? <DriverPhotoCard compact /> : null}
         {approved && p.badge ? (
           <Card testID="driver-badge-card" style={{ gap: 4, borderColor: colors.warning, borderWidth: 1.5 }}>
             <Row>

@@ -1,5 +1,6 @@
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
@@ -171,8 +172,12 @@ export default function BookingDetail() {
         {b.driver ? (
           <Card testID="driver-card" style={{ gap: space.md }}>
             <Row gap={space.md} style={{ alignItems: "flex-start" }}>
-              <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.tint, borderWidth: 2, borderColor: colors.surfaceInverse, alignItems: "center", justifyContent: "center" }}>
-                <Ionicons name="person" size={28} color={colors.onSurface} />
+              <View style={{ width: 64, height: 64, borderRadius: 32, overflow: "hidden", backgroundColor: colors.tint, borderWidth: 2, borderColor: colors.surfaceInverse, alignItems: "center", justifyContent: "center" }}>
+                {b.driver.photo_url ? (
+                  <Image testID="driver-photo" source={{ uri: `${BACKEND_URL}${b.driver.photo_url}` }} placeholder={{ blurhash: "L6PZfSi_.AyE_3t7t7R**0o#DgR4" }} transition={200} style={{ width: 64, height: 64 }} contentFit="cover" />
+                ) : (
+                  <Ionicons name="person" size={28} color={colors.onSurface} />
+                )}
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <Txt v="h2" style={{ fontFamily: fonts.bold }}>{b.driver.name}</Txt>

@@ -16,7 +16,7 @@ import { fonts, radius, space, useTheme } from "@/src/theme";
 import { Btn, Card, Field, IconBtn, Row, Tag, TopBar, Txt, useToast } from "@/src/ui";
 
 /** Shared profile for customers & drivers. */
-export function ProfileScreen({ extra }: { extra?: React.ReactNode }) {
+export function ProfileScreen({ extra, avatar }: { extra?: React.ReactNode; avatar?: React.ReactNode }) {
   const { user, signOut, refresh } = useAuth();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -53,9 +53,11 @@ export function ProfileScreen({ extra }: { extra?: React.ReactNode }) {
       <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: space.lg, gap: space.lg, paddingBottom: (usesNativeTabs ? insets.bottom : 0) + space.xl }}>
         <Card style={{ gap: space.md }} testID="profile-card">
           <Row gap={space.md}>
-            <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: colors.tint, borderWidth: 2, borderColor: colors.surfaceInverse, alignItems: "center", justifyContent: "center" }}>
-              <Txt v="h2" style={{ fontFamily: fonts.bold }}>{(user?.name ?? "P").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()}</Txt>
-            </View>
+            {avatar ?? (
+              <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: colors.tint, borderWidth: 2, borderColor: colors.surfaceInverse, alignItems: "center", justifyContent: "center" }}>
+                <Txt v="h2" style={{ fontFamily: fonts.bold }}>{(user?.name ?? "P").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()}</Txt>
+              </View>
+            )}
             <View style={{ flex: 1, gap: 4 }}>
               <Row gap={6} style={{ flexWrap: "wrap" }}>
                 <Txt v="h2" style={{ fontFamily: fonts.bold }}>{user?.name || "Your name"}</Txt>
