@@ -1,0 +1,27 @@
+{
+  "summary": "Verified Expo Go crash fix (ExpoTopicSubscriptionModule). No static import of expo-notifications remains; the only reference is the guarded require in src/notifications.ts. Dependency graph analysis of the Metro android bundle (2129 modules, HTTP 200) and the ios bundle (2117 modules, HTTP 200) shows that src/notifications.ts is the only module outside expo-notifications that depends on it, via `pushSupported ? require('expo-notifications') : null`. So the TopicSubscriptionModule requireNativeModule never runs in Expo Go. No new 'Cannot find native module' or 'missing the required default export' lines appeared in the expo logs after the restart and bundle load; the old errors all date from before the restart. Every native dependency matches node_modules/expo/bundledNativeModules.json for SDK 58, and react-native-keyboard-controller 1.22.7 is listed as included in Expo Go. Web smoke at 390x844 passed: the landing page loads, customer 9000000003 gets to /customer home and driver 9000000002 gets to /driver home, with no page errors or red overlay. Note: the native bundles were built but not executed on a device. Runtime on Expo Go was verified statically only.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [".screenshots/landing.png", ".screenshots/customer_home.png", ".screenshots/driver_home.png"],
+  "action_items": [
+    "(Minor, TS only) app/erp/referrals.tsx:55 and app/notifications.tsx:35: RefreshControl onRefresh={() => q.refetch()} returns Promise<QueryObserverResult>, which is a TS2769 error. Use onRefresh={() => { q.refetch(); }}. The project has 21 tsc errors in total; these are not runtime issues.",
+    "Optional: confirm on a physical Expo Go device (scan the QR) because Metro cannot execute the native bundle here."
+  ],
+  "critical_code_review_comments": [
+    "src/notifications.ts: the guard is correct. ExecutionEnvironment.StoreClient ('storeClient') exists in expo-constants 58, and the typeof import() is type-only, so it is erased.",
+    "src/push.ts is guarded by `!Notifications || !Device.isDevice`. expo-device is available in Expo Go.",
+    "Static native-module risk review: expo-image-picker, expo-location (~58.0.19 vs bundled ~58.0.18, patch-compatible), expo-print, expo-sharing, expo-document-picker, expo-secure-store, expo-device and react-native-keyboard-controller are all in the SDK 58 bundledNativeModules list and ship in Expo Go. @react-native-vector-icons/ionicons uses expo-font dynamic loading, which is OK in Expo Go. No other module-scope native risk found."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "To validate native bundles, curl http://localhost:3000/node_modules/expo-router/entry.bundle?platform=android&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app, then parse the `},id,[deps],\"path\");` module footers to find which modules depend on expo-notifications. Expo Go runtime logs appear in /var/log/supervisor/expo.out.log, not in err.log.",
+  "rca_of_issue": "The module-scope `import * as Notifications from 'expo-notifications'` in _layout.tsx and push.ts ran TopicSubscriptionModule's requireNativeModule('ExpoTopicSubscriptionModule'), which is missing in Expo Go. That threw while the route modules were being evaluated, so every route reported 'missing default export'. The fix uses a conditional require behind pushSupported, and it is verified in the bundle graph."
+}

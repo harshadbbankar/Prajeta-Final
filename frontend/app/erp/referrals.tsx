@@ -77,7 +77,7 @@ export default function Referrals() {
                   </Row>
                 ))}
               </Card>
-            ) : null
+            ) : undefined
           }
           renderItem={({ item: r, index }) => (
             <Card testID={`referrer-${index}`} style={{ gap: space.sm, borderColor: index === 0 ? colors.warning : colors.border, borderWidth: index === 0 ? 1.5 : 1 }}>

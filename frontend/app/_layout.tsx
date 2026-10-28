@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClientProvider } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
-import * as Notifications from "expo-notifications";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -12,6 +11,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { AuthProvider } from "@/src/auth";
 import { ErrorBoundary } from "@/src/components/error-boundary";
+import { Notifications } from "@/src/notifications";
 import { Btn, Txt, ToastProvider } from "@/src/ui";
 import { queryClient } from "@/src/query-client";
 import { radius, space, useTheme } from "@/src/theme";
@@ -20,8 +20,8 @@ import { radius, space, useTheme } from "@/src/theme";
 // and agent works as expected.
 LogBox.ignoreAllLogs(true);
 
-// Push: foreground display + Android channel — module scope, before any component
-if (Platform.OS !== "web") {
+// Push: foreground display + Android channel — module scope, before any component (skipped in Expo Go / web)
+if (Notifications) {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -32,7 +32,7 @@ if (Platform.OS !== "web") {
     }),
   });
 }
-if (Platform.OS === "android") {
+if (Notifications && Platform.OS === "android") {
   Notifications.setNotificationChannelAsync("default", {
     name: "Default",
     importance: Notifications.AndroidImportance.MAX,
@@ -53,15 +53,16 @@ export default function RootLayout() {
   const [nudge, setNudge] = useState(false);
 
   useEffect(() => {
-    if (Platform.OS === "web") return;
-    const tapSub = Notifications.addNotificationResponseReceivedListener((response) =>
+    const N = Notifications;
+    if (!N) return;
+    const tapSub = N.addNotificationResponseReceivedListener((response) =>
       openPushUrl(router, response.notification.request.content.data || {}),
     );
-    Notifications.getLastNotificationResponseAsync().then((response) => {
+    N.getLastNotificationResponseAsync().then((response) => {
       if (response) openPushUrl(router, response.notification.request.content.data || {});
     });
     (async () => {
-      const { status, canAskAgain } = await Notifications.getPermissionsAsync();
+      const { status, canAskAgain } = await N.getPermissionsAsync();
       if (status !== "denied" || canAskAgain) return;
       const lastNudge = await AsyncStorage.getItem("pushNudgeAt");
       if (lastNudge && Date.now() - Number(lastNudge) <= 7 * 24 * 60 * 60 * 1000) return;
