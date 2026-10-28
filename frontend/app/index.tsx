@@ -13,7 +13,8 @@ import { fonts, radius, space, useTheme } from "@/src/theme";
 import { BrandLogo, Btn, Card, Chip, ErrorView, IconTile, Loader, Row, Tag, Txt } from "@/src/ui";
 import { RetainerCalculator } from "@/src/components/RetainerCalculator";
 
-const HERO = "https://images.unsplash.com/photo-1503376780353-7e6692767b70?crop=entropy&cs=srgb&fm=jpg&q=70&w=1200";
+const HERO = require("../assets/images/hero-chauffeur.jpg");
+const PORTRAIT = require("../assets/images/driver-portrait.jpg");
 
 const STEPS = [
   { icon: "list", t: "Choose a service", d: "Hourly, full-day, outstation, monthly and more." },
@@ -167,16 +168,16 @@ export default function Landing() {
           <View style={{ gap: space.md, flex: wide ? 1.3 : undefined }}>
             <Row gap={6} style={{ alignSelf: "flex-start", backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 }}>
               <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.success }} />
-              <Txt v="caption" style={{ fontFamily: fonts.semibold, color: colors.onSurface }}>White-glove private chauffeurs</Txt>
+              <Txt v="caption" style={{ fontFamily: fonts.semibold, color: colors.onSurface }}>Police verified squad · white-glove chauffeurs</Txt>
             </Row>
             <Txt v="display" testID="hero-headline" style={wide ? { fontSize: 44, lineHeight: 52 } : { fontSize: 30, lineHeight: 38 }}>
-              Executive Chauffeurs For Your Own Car
+              Chauffeurs for Your Own Vehicle
             </Txt>
             <Txt v="body" color={colors.muted} style={{ fontSize: 15, lineHeight: 22 }}>
               {s.tagline ?? "Find a Trusted Driver, Wherever You Need One."} Entrust your sedan, SUV or luxury car to vetted, document-verified drivers in {cityName} — by the hour, day, night, outstation or month.
             </Txt>
             <View style={{ borderRadius: radius.lg, overflow: "hidden", height: wide ? 300 : 200, backgroundColor: colors.surfaceInverse }}>
-              <Image source={{ uri: HERO }} style={{ position: "absolute", width: "100%", height: "100%" }} contentFit="cover" />
+              <Image source={HERO} style={{ position: "absolute", width: "100%", height: "100%" }} contentFit="cover" />
               <LinearGradient colors={["transparent", "rgba(0,0,0,0.75)"]} style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "70%" }} />
               <Row style={{ position: "absolute", left: space.md, right: space.md, bottom: space.md, justifyContent: "space-between", alignItems: "flex-end" }}>
                 <View style={{ gap: 4, flex: 1 }}>
@@ -235,9 +236,7 @@ export default function Landing() {
                 <Tag tone="warn" icon="star" label="5.0" />
               </Row>
               <Row gap={space.md} style={{ backgroundColor: colors.tint, borderWidth: 1, borderColor: colors.tintBorder, borderRadius: radius.md, padding: space.md }}>
-                <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.surfaceInverse, alignItems: "center", justifyContent: "center" }}>
-                  <Txt v="h3" color={colors.onSurfaceInverse}>RS</Txt>
-                </View>
+                <Image source={PORTRAIT} style={{ width: 56, height: 56, borderRadius: 28 }} contentFit="cover" />
                 <View style={{ flex: 1, gap: 4 }}>
                   <Txt v="h3" style={{ fontFamily: fonts.bold }}>Rajesh V. Sharma</Txt>
                   <Txt v="caption">Master Chauffeur · 11 yrs experience</Txt>
@@ -291,10 +290,10 @@ export default function Landing() {
                   style={({ pressed }) => ({
                     flexBasis: wide ? "31%" : "100%",
                     flexGrow: 1,
-                    backgroundColor: colors.surface,
+                    backgroundColor: i === 0 ? colors.brandTertiary : colors.surface,
                     borderRadius: radius.lg,
                     borderWidth: i === 0 ? 2 : 1,
-                    borderColor: i === 0 ? colors.surfaceInverse : colors.border,
+                    borderColor: i === 0 ? colors.brandPrimary : colors.border,
                     padding: space.lg,
                     gap: space.sm,
                     opacity: pressed ? 0.85 : 1,

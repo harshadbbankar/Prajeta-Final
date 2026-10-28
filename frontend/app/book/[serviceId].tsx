@@ -16,7 +16,7 @@ const VEHICLES = ["Hatchback", "Sedan", "SUV", "Luxury", "MUV"];
 const VEHICLE_LABEL: Record<string, string> = { Hatchback: "Hatchback", Sedan: "Sedan / Compact SUV", SUV: "Full Size SUV", Luxury: "Luxury / German", MUV: "MUV / 7-Seater" };
 
 export default function BookWizard() {
-  const p = useLocalSearchParams<{ serviceId: string; city?: string; date?: string; time?: string; trans?: string }>();
+  const p = useLocalSearchParams<{ serviceId: string; city?: string; date?: string; time?: string; trans?: string; pickup?: string }>();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
@@ -30,7 +30,7 @@ export default function BookWizard() {
   const [time, setTime] = useState(p.time ?? "10:00");
   const [hours, setHours] = useState<number | null>(null);
   const [days, setDays] = useState(1);
-  const [pickup, setPickup] = useState("");
+  const [pickup, setPickup] = useState(p.pickup ?? "");
   const [dest, setDest] = useState("");
   const [vehicle, setVehicle] = useState("Sedan");
   const [vehicleId, setVehicleId] = useState("");

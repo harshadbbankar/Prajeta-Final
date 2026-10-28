@@ -39,13 +39,18 @@ export type ColorScheme = "light" | "dark";
 const light = {
   surface: "#FFFFFF",
   onSurface: "#151C27",
-  // Stitch canvas (#f9f9ff) and soft blue containers (#f0f3ff / #dce2f3)
-  canvas: "#F9F9FF",
-  onCanvas: "#151C27",
-  tint: "#F0F3FF",
-  onTint: "#151C27",
-  tintBorder: "#DCE2F3",
+  // Executive Mobility canvas (#F3F4F6) with white cards and grey containers
+  canvas: "#F3F4F6",
+  onCanvas: "#191C1E",
+  tint: "#F3F4F6",
+  onTint: "#191C1E",
+  tintBorder: "#E5E7EB",
   outline: "#747878",
+  // Dark cockpit surfaces (driver offers / dispatch consoles)
+  cockpit: "#171717",
+  cockpitCard: "#292929",
+  cockpitBorder: "#374151",
+  gold: "#C5A059",
   surfaceSecondary: "#F3F4F6",
   onSurfaceSecondary: "#292929",
   surfaceTertiary: "#E5E7EB",

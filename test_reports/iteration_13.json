@@ -1,0 +1,24 @@
+{
+  "summary": "Deployment-readiness light smoke. .gitignore fix verified: `git check-ignore -v frontend/.env backend/.env` prints nothing (rc=1); both .env files now show as untracked (??) so they can be committed; *credentials.json*, credentials.json, *token.json*, memory/test_credentials.md, *.key, *.pem are still ignored. app.json parses as valid JSON; all 4 referenced assets exist (icon 1024x1024 RGB, adaptive-icon 1024x1024 RGBA, favicon 196x196, splash-image 600x600). Backend 6/6 pytest pass (public config 200, demo OTP send channel=demo, wrong code 400, customer/driver/owner demo login + /auth/me roles). Frontend smoke at 390x844 all pass: landing brand-name 'PRAJETA' + footer-brand, /login login-brand, customer -> /customer, driver -> /driver, driver top-bar SOS opens the IN_PROGRESS trip (7068d955) even though an ACCEPTED job is listed first, owner -> /admin dashboard, deep link /admin/bookings stays on /admin/bookings. No page errors. No regressions.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_deploy_smoke_iter13.py", "/app/test_reports/pytest/pytest_iter13.xml"],
+  "action_items": [
+    "Before going live: clear DEMO_PHONES / DEMO_OTP in backend env (demo phones accept 123456)."
+  ],
+  "critical_code_review_comments": [
+    "Expo Metro log has native-client (Expo Go) errors: \"Cannot find native module 'ExpoTopicSubscriptionModule'\" and \"Cannot read property 'ErrorBoundary' of undefined\". These come from the native device client, likely an expo-notifications/Expo Go mismatch, and do not affect web. Worth checking on a device/dev build.",
+    "The frontend env key is EXPO_PUBLIC_BACKEND_URL (not EXPO_BACKEND_URL). This is consistent and works."
+  ],
+  "updated_files": ["/app/backend/tests/test_deploy_smoke_iter13.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "/api/auth/otp/send is rate limited to 5 per phone per 10 min, so verify demo phones directly via /api/auth/otp/verify in tests. Driver 9000000002 has an ACCEPTED job (6acad2db) and an IN_PROGRESS job (7068d955). iteration_12.json was not present in /app/test_reports, so this report is numbered 13 per E1's note."
+}

@@ -20,6 +20,13 @@ User choices: name Prajeta · phone login via WhatsApp OTP · Razorpay test mode
 - Owner intelligence: KPIs vs previous period, P&L, service & city profitability, rule-based insights, action plan, pricing simulator, CSV export, data-quality warnings, KPI definitions.
 - Synthetic demo history seeded (flagged is_demo).
 
+## Iteration 14 (2026-06) — "Executive Mobility & Telematics" redesign (zip 2)
+- Canvas #F3F4F6, cockpit dark tokens (cockpit/cockpitCard/cockpitBorder/gold). Red logo + name (BrandLogo) everywhere; red app icon/splash.
+- Customer home: brand bar, chauffeur photo hero, SERVICE CATEGORIES select grid, Book Private Chauffeur card (gear segmented, pickup input, date/time sheets) → wizard prefilled (pickup/trans params).
+- Driver home: header with DRV id + dark ON DUTY pill, shift telemetry, dark cockpit offer card (ACCEPT DUTY / Decline), Active & Upcoming list, Compliance card, Dispatch Central SOS.
+- ERP dashboard: red PRAJETA ERP header, Emergency button, KPI tiles + dispatch alert, Live Dispatch Queue (filters, Quick Assign), KYC card, Executive Action Plan; 2-col at ≥1024px.
+- Deployment: .gitignore no longer excludes .env. Before go-live: clear DEMO_PHONES/DEMO_OTP.
+
 ## Iteration 12 (2026-06) — Stitch screen-level restyle (22 mock screens)
 - User choices: keep Prajeta name; only restyle existing screens (no KYC/damage-photo screens); same layouts with real data, sample marketing copy allowed (spotlight, testimonials, stats).
 - Tokens: canvas #F9F9FF, tint #F0F3FF / #DCE2F3, text #151C27, card radius 12; black active tabs.

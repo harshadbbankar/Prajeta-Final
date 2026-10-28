@@ -53,7 +53,7 @@ export default function LiveTrip() {
               {d.sos_active ? (
                 <Card testID="public-sos-banner" style={{ borderColor: colors.error, borderWidth: 2, gap: 4 }}>
                   <Txt v="h3" color={colors.error}>SOS raised on this trip</Txt>
-                  <Txt v="caption">Prajeta's safety team has been alerted and is in contact. In immediate danger call 112.</Txt>
+                  <Txt v="caption">Prajeta&apos;s safety team has been alerted and is in contact. In immediate danger call 112.</Txt>
                 </Card>
               ) : null}
               <TrackingCard t={d} testID="public-tracking-card" />
