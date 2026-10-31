@@ -20,6 +20,10 @@ User choices: name Prajeta · phone login via WhatsApp OTP · Razorpay test mode
 - Owner intelligence: KPIs vs previous period, P&L, service & city profitability, rule-based insights, action plan, pricing simulator, CSV export, data-quality warnings, KPI definitions.
 - Synthetic demo history seeded (flagged is_demo).
 
+## Iteration 17 (2026-06) — Split into standalone Customer & Driver Expo apps
+- /app/apps/prajeta-customer (com.prajeta.customer) and /app/apps/prajeta-driver (com.prajeta.driver), zipped alongside. Role-locked login (wrong-app accounts signed out), index/home role guards, no ERP/other-role routes. Shared backend via EXPO_PUBLIC_BACKEND_URL. /app/frontend (combined app + ERP) and backend unchanged.
+- Web+ERP build prompt: /app/memory/WEB_ERP_BUILD_PROMPT.md
+
 ## Iteration 15 (2026-06) — Driver photo profiles
 - photo_routes.py: POST /api/driver/photo (JPG/PNG/WEBP checked by file header, 8MB), GET /api/driver/photo/file/{id} (driver/staff), GET /api/public/driver-photo/{id} (approved only), POST /api/admin/drivers/{id}/photo {approve, reason}. Previous approved photo stays visible until a replacement is approved. /admin/drivers?photo_status=PENDING.
 - UI: DriverPhotoCard (selfie/gallery, permission pre-prompt + Open Settings) on driver profile + compact on home; ERP PhotoReview on driver page + "Photos to review" in dashboard KYC card; customer booking driver-card shows approved photo.
@@ -92,3 +96,9 @@ User choices: name Prajeta · phone login via WhatsApp OTP · Razorpay test mode
 - P0: Add Razorpay test keys & Twilio Verify (WhatsApp) keys; remove demo phones before go-live.
 - P1: Staff user management UI (create ops/finance/verification accounts), document expiry reminders, budgets/forecasts, PDF report exports, live driver location.
 - P2: Corporate client accounts & monthly invoicing, referral/coupons admin, multilingual (Hindi), automated payouts.
+
+## Iteration 18 — Auto rating card (Jun 2026)
+- Customer rating card (stars, tags, short note) now pops up by itself after a trip completes (20s polling) and on next app open while still unrated; "Later" hides it for the session; shown at most once per session.
+- Backend: GET /api/bookings/pending-review (latest COMPLETED unrated trip, last 14 days).
+- Component: src/components/RatingPrompt.tsx (mounted in root _layout) in /app/apps/prajeta-customer and mirrored in /app/frontend (preview).
+- Android push: still waiting for google-services.json (user skipped).

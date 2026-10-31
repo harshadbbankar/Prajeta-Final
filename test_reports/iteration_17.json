@@ -1,0 +1,35 @@
+{
+  "summary": "Static review of the app split into /app/apps/prajeta-customer and /app/apps/prajeta-driver. Customer app routes: no admin/, erp/, driver/, trip/ or driver-onboarding routes. Driver app routes: no admin/, erp/, customer/, book/, booking/, service/, live/, enquiry or track routes. index.tsx, auth APP_ROLES/homeFor, role-locked login with sign-out plus the login-wrong-app message, notifications targets (/booking/{id} in customer, /trip/{id} in driver), app.json name/slug/package/plugins/permissions and .env EXPO_PUBLIC_BACKEND_URL all match the spec. ProfileScreen and SupportScreen are in src/components in the driver app. tsc --noEmit: customer has 7 errors and driver has 8. All of them are the expected theme.ts NamedStyles and TS2769 RefreshControl errors. The node_modules symlinks were removed afterwards. There are no tracked git changes in /app/frontend or /app/backend. Dangling links: I found 1 real one and fixed it (driver page/[slug].tsx -> /enquiry). The /trip and /booking branches in SosQuick can never run, because the role prop is hardcoded in each app. Backend push action_url is chosen by role (/trip for drivers, /booking for customer/corporate), so it lands on routes that exist in each app. I did not re-run expo export.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Driver app contact page", "issue": "FIXED: app/page/[slug].tsx:99 'Send enquiry' opened Linking.createURL('/enquiry?type=contact'), but /enquiry does not exist in the driver app. It now does router.push('/support') with the title 'Message support' (testID contact-enquiry-button unchanged).", "affected_testIDs": ["contact-enquiry-button"]},
+      {"flow": "Entry redirect role guard (both apps)", "issue": "MEDIUM: app/index.tsx:10 in both apps redirects ANY signed-in user to /customer (or /driver) without checking the role. A stored token or a native deep link that sets user from AuthProvider.handleUrl (src/auth.tsx:56-64), e.g. the Google native redirect to the root scheme URL, lands a driver account on customer home (or a customer on the driver dashboard). customer/index.tsx:39 and driver/index.tsx:40 only check !user. The wrong-app sign-out runs only while login.tsx is mounted. Suggested fix: use homeFor(user?.role) in index.tsx, which returns /login for wrong roles, and/or add an APP_ROLES guard in customer/_layout.tsx and driver/_layout.tsx.", "affected_testIDs": []}
+    ],
+    "design_issues": [
+      {"screen": "Customer app.json", "issues": ["The expo-location plugin locationWhenInUsePermission text is 'Show customers where you are during trips' (driver wording). The iOS infoPlist says 'Set your pickup point for your chauffeur'. The plugin string should match the customer use case."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "In app/index.tsx of both apps, use homeFor(user.role) instead of hardcoding /customer or /driver, and add a role guard in the tab layouts so wrong-role sessions cannot reach the wrong app's screens.",
+    "Customer app: remove the unused expo-image-picker dependency from package.json:29 (no code uses it, only a comment in src/utils/upload.ts:20).",
+    "Customer app.json: change the expo-location plugin permission text to customer wording.",
+    "Both package.json files still have \"name\": \"frontend\". Rename them to prajeta-customer and prajeta-driver.",
+    "Optional cleanup: SosQuick.tsx:21-30 and SosButton.tsx still branch on customer/driver in both apps. The branch for the other role never runs (the /trip/ path in the customer app, the /booking/ path in the driver app) and could be removed.",
+    "Note: /app/frontend/yarn.lock is untracked by git (it is byte-identical to apps/*/yarn.lock). Check whether it was created during the split."
+  ],
+  "critical_code_review_comments": [
+    "login.tsx (both apps): the google() closure uses `role`, which is declared later at line 50. It works at runtime (the TDZ has ended before the handler runs), but it is fragile. Move `const role = APP_ROLE` above google().",
+    "Customer login BrandLogo sub='Driver services' is the same as the original app's branding intent and is acceptable."
+  ],
+  "updated_files": ["/app/apps/prajeta-driver/app/page/[slug].tsx"],
+  "success_rate": {"backend": "N/A", "frontend": "static checks 95% (1 dangling link fixed, 1 medium role-guard gap)"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The split apps live in /app/apps/prajeta-{customer,driver} and cannot be served on port 3000. To type-check, symlink /app/frontend/node_modules into the app, run npx tsc --noEmit -p ., then remove the symlink. Expected baseline: customer 7 errors, driver 8, all NamedStyles or TS2769 RefreshControl.",
+  "rca_of_issue": ""
+}

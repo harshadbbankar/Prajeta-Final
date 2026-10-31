@@ -1,0 +1,35 @@
+{
+  "summary": "Tested the auto rating prompt end to end. Backend: 7/7 pytest tests pass for GET /api/bookings/pending-review. They cover the response shape for the demo customer, 403 for driver and owner, 401 without a token, null for a new customer, and the filters: older than 14 days, not COMPLETED, and no driver are all excluded. The newest trip by updated_at is returned first. Rating it returns the next unrated trip, then null. A customer cannot see or rate another customer's trip (404). In a real driver flow (book → cash → assign → accept → arrive → start → complete with PIN), the trip appears in pending-review only after completion. Frontend, mobile 375x667: after logging in as 9000000003, rating-prompt-sheet opens by itself with the driver photo, 'Rate Ravi', 5 stars, 6 tags, a comment box, Submit and Later. Later closes it, and it stayed closed through a 23s polling window. It reappears after a reload (next app open). Tapping the backdrop also dismisses it. Submitting 4★ with 2 tags and a comment shows the 'Thanks for your feedback!' toast, and the review is saved in the DB. /booking/{id} then shows 'Your rating: ★★★★'. The 'Rate your driver' button on the booking detail screen still works for another completed trip. A trip completed while the app was open was picked up by polling in about 16s. Driver (9000000002) and owner (9000000001) logins showed no prompt and made 0 pending-review requests. Customer Home and Bookings screens still work, with no console errors. No bugs found.",
+  "backend_issues": {"critical": [], "minor": [
+    {"endpoint": "GET /api/bookings/pending-review", "issue": "Only the 5 newest completed trips are checked (.limit(5)). If all 5 are rated, an older unrated trip from the last 14 days is never offered. This is an edge case. A $lookup or a larger limit would fix it."}
+  ]},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "RatingPrompt (global)", "issues": [
+        "When the customer has several unrated trips, submitting one (in the prompt or via 'Rate your driver') immediately opens the card for the next trip. The spec allows this, but it can feel nagging. Consider showing at most one prompt per session.",
+        "The card is a root-level Modal that can open on any screen every 20s, including booking, checkout and payment screens and over other sheets or the push-nudge modal. Consider not showing it on /book/*, payment or SOS screens, or while another modal is open."
+      ]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_pending_review_iter18.py", "/app/backend/tests/setup_ui_iter18.py", "/app/test_reports/pytest/pytest_iter18.xml"],
+  "action_items": [
+    "Optional: scan more than 5 completed trips in pending_review so an older unrated trip is still found when the newest ones are rated.",
+    "Optional: don't show the prompt on booking, payment or SOS screens. Limit it to one prompt per session when the customer has several unrated trips.",
+    "Optional: on native, connect react-query focusManager to AppState, or invalidate ['pending-review'] when a TRIP_COMPLETED push arrives. The card would then open the moment the trip ends or the app comes back to the foreground, without waiting up to 20s for the next poll."
+  ],
+  "critical_code_review_comments": [
+    "The /bookings/pending-review route is declared before /bookings/{booking_id}, so the route order is correct. _id is excluded and require_customer is used.",
+    "The prompt and the booking detail sheet each refresh the other's data after a rating (['booking', id] and ['pending-review']), so they stay in sync.",
+    "queryClient.clear() on logout stops one account's cached prompt from showing for the next account. The 'Later' snooze is a module-level Set keyed by booking id, so it lasts only for the current JS session, which matches the spec.",
+    "The standalone app copy (/app/apps/prajeta-customer) is the same component and uses APP_ROLES = customer/corporate. It is mounted in that app's _layout as well."
+  ],
+  "updated_files": ["/app/backend/tests/test_pending_review_iter18.py (new)", "/app/backend/tests/setup_ui_iter18.py (new UI seed/cleanup helper)"],
+  "success_rate": {"backend": "100% (7/7)", "frontend": "100%"},
+  "seed_data_creation": "Created TESTUI* completed bookings (cloned from a completed booking of 9000000003) for the UI tests and removed them with 'python tests/setup_ui_iter18.py cleanup'. PRJ-WYB6DN5C was left unrated. The pytest run uses a random new customer and cleans up its bookings and reviews.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "To seed unrated completed trips for 9000000003: python tests/setup_ui_iter18.py seed <n> [minutes_ago]. Remove them with: python tests/setup_ui_iter18.py cleanup. Bookings inserted directly in pytest must use a past date (2020-01-01); otherwise driver_conflict blocks assigning the demo driver."
+}

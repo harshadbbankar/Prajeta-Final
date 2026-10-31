@@ -11,6 +11,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { AuthProvider } from "@/src/auth";
 import { ErrorBoundary } from "@/src/components/error-boundary";
+import { RatingPrompt } from "@/src/components/RatingPrompt";
 import { Notifications } from "@/src/notifications";
 import { Btn, Txt, ToastProvider } from "@/src/ui";
 import { queryClient } from "@/src/query-client";
@@ -96,6 +97,7 @@ export default function RootLayout() {
               <ToastProvider>
                 <StatusBar style="dark" />
                 <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }} />
+                <RatingPrompt />
                 <Modal visible={nudge} transparent animationType="fade" onRequestClose={() => closeNudge(false)}>
                   <View style={{ flex: 1, backgroundColor: colors.scrim, justifyContent: "center", padding: space.lg }}>
                     <View testID="push-nudge" style={{ backgroundColor: colors.surface, borderRadius: radius.lg, padding: space.lg, gap: space.md }}>

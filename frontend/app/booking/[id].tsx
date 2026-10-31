@@ -10,6 +10,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BACKEND_URL, api } from "@/src/api";
 import { LiveTracking } from "@/src/components/LiveTracking";
+import { REVIEW_TAGS } from "@/src/components/RatingPrompt";
+import { queryClient } from "@/src/query-client";
 import { ShareTrip } from "@/src/components/ShareTrip";
 import { SosButton } from "@/src/components/SosButton";
 import { downloadInvoice } from "@/src/invoice";
@@ -18,7 +20,6 @@ import { fonts, radius, space, useTheme } from "@/src/theme";
 import { Btn, Card, CardTitle, Chip, ChipRow, Divider, ErrorView, Field, Header, KV, Loader, PinDisplay, Row, RouteLine, Sheet, StatusBadge, StepBar, Tag, Txt, money, useToast } from "@/src/ui";
 
 const FLOW = ["AWAITING_ASSIGNMENT", "ACCEPTED", "DRIVER_ARRIVED", "IN_PROGRESS", "COMPLETED"];
-const REVIEW_TAGS = ["Punctual", "Safe driving", "Polite", "Well dressed", "Knows routes", "Careful with car"];
 const FLOW_LABEL = ["Confirmed", "Driver assigned", "Driver arrived", "Trip started", "Completed"];
 
 export default function BookingDetail() {
@@ -85,6 +86,7 @@ export default function BookingDetail() {
       setSheet("");
       setText("");
       q.refetch();
+      queryClient.invalidateQueries({ queryKey: ["pending-review"] });
     } catch (e: any) {
       toast(e.message, "err");
     } finally {

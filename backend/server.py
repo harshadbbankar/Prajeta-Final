@@ -352,6 +352,20 @@ async def my_bookings(user: dict = Depends(require_customer)):
     return [customer_view(b) async for b in db.bookings.find({"customer_id": user["id"]}, {"_id": 0}).sort("created_at", -1)]
 
 
+@api.get("/bookings/pending-review")
+async def pending_review(user: dict = Depends(require_customer)):
+    """Most recent completed trip (last 14 days) the customer has not rated yet — drives the auto rating card."""
+    since = (now() - timedelta(days=14)).isoformat()
+    async for b in db.bookings.find({"customer_id": user["id"], "status": "COMPLETED", "driver_id": {"$ne": None},
+                                     "updated_at": {"$gte": since}}, {"_id": 0}).sort("updated_at", -1).limit(50):
+        if await db.reviews.find_one({"booking_id": b["id"]}, {"_id": 1}):
+            continue
+        p = await db.driver_profiles.find_one({"user_id": b["driver_id"]}, {"_id": 0}) or {}
+        return {"booking": {"id": b["id"], "ref": b["ref"], "service_name": b.get("service_name"), "date": b.get("date"),
+                            "driver": {"name": p.get("name", "your chauffeur"), "photo_url": photo_routes.approved_photo_url(p) if p else None}}}
+    return {"booking": None}
+
+
 async def own_booking(booking_id: str, user: dict) -> dict:
     b = await db.bookings.find_one({"id": booking_id, "customer_id": user["id"]}, {"_id": 0})
     if not b:
