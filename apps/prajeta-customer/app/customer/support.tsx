@@ -6,6 +6,7 @@ import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
+import { useAuth } from "@/src/auth";
 import { useConfig } from "@/src/hooks";
 import { usesNativeTabs } from "@/src/navigation";
 import { space, useTheme } from "@/src/theme";
@@ -17,7 +18,8 @@ export function SupportScreen({ inTabs = true }: { inTabs?: boolean }) {
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const cfg = useConfig();
-  const q = useQuery({ queryKey: ["tickets"], queryFn: () => api<any[]>("/tickets") });
+  const { user } = useAuth();
+  const q = useQuery({ queryKey: ["tickets"], queryFn: () => api<any[]>("/tickets"), enabled: !!user });
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState("");
   const [msg, setMsg] = useState("");

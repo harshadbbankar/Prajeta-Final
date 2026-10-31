@@ -1,0 +1,28 @@
+{
+  "summary": "Frontend-only smoke test of the standalone prajeta-customer Expo app against the remote backend https://fleetride-hub.preview.emergentagent.com. App loads, / redirects to /login, and the customer login screen renders fully (header 'Log in or sign up', brand logo, name input, +91 mobile input, 'Send code on WhatsApp', 'Continue with Google'). Typing phone '123' and pressing send triggers client-side validation ('Enter your 10-digit mobile number'), so no OTP request goes out. Every API call observed goes to https://fleetride-hub.preview.emergentagent.com/api/... and responses come back: GET /api/public/config 200, GET /api/public/track/PRJ-TEST0000 404 shown in the UI as 'No booking found...', GET /api/tickets 401 when logged out. No CORS errors and no failed network requests. Customer-only: app/ contains only customer, booking, book, service, enquiry, track, support, ticket, live, page and notifications routes. /driver, /admin and /erp show 'Unmatched Route', and /customer while logged out redirects to /login. No data was created on the remote backend and /app/backend was not modified. No deprecated expo packages found.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Public /support while logged out", "issue": "useQuery(['tickets']) in app/customer/support.tsx:20 is not gated on user. Logged-out users trigger 4 calls to GET /api/tickets that return 401 (react-query retries), with a spinner for about 7s before 'No tickets yet' appears. Gate it with enabled: !!user and/or skip retries on 401.", "affected_testIDs": []}
+    ],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Optional/minor: in app/customer/support.tsx:20 add enabled: !!user to the tickets query (or retry: false on 401) to avoid repeated 401s and the long spinner on public /support"
+  ],
+  "critical_code_review_comments": [
+    "src/api.ts uses process.env.EXPO_PUBLIC_BACKEND_URL with no hardcoded fallback. Good.",
+    "login.tsx: role-gating (APP_ROLES customer/corporate) signs out driver/staff accounts with a wrong-app message. Good.",
+    "authedUrl() puts the auth token in the query string (token=...), which can leak into logs/history. This is existing backend contract, FYI only."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (not requested)", "frontend": "100% of requested smoke checks"},
+  "seed_data_creation": "None. Only read-only GETs plus client-side validation; no OTP sent and no enquiry submitted.",
+  "test_credentials": "/app/memory/test_credentials.md missing (not needed for this smoke test)",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Frontend preview: https://prajeta-customer--8n0cd024.preview.emergentagent.com. Backend is REMOTE (fleetride-hub). Ignore the local /app/backend. Do not send OTPs to real numbers."
+}

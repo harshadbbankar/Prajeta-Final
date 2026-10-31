@@ -102,3 +102,9 @@ User choices: name Prajeta · phone login via WhatsApp OTP · Razorpay test mode
 - Backend: GET /api/bookings/pending-review (latest COMPLETED unrated trip, last 14 days).
 - Component: src/components/RatingPrompt.tsx (mounted in root _layout) in /app/apps/prajeta-customer and mirrored in /app/frontend (preview).
 - Android push: still waiting for google-services.json (user skipped).
+
+## Standalone customer app setup (Jun 2026)
+- /app/frontend replaced with apps/prajeta-customer (customer-only). Old combined frontend backed up at /app/apps/_combined-frontend-backup
+- EXPO_PUBLIC_BACKEND_URL=https://fleetride-hub.preview.emergentagent.com (existing remote backend; no new backend/db)
+- Verified: login renders, API calls hit remote backend, no CORS errors, no driver/admin/erp routes
+- Fix: support screen skips /api/tickets when logged out

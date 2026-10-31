@@ -1,0 +1,73 @@
+{
+  "expo": {
+    "name": "Prajeta",
+    "slug": "frontend",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "prajeta",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.emergent.fleetridehub.mk7jvh",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Show customers where you are during trips",
+        "NSCameraUsageDescription": "Take your driver profile selfie",
+        "NSPhotoLibraryUsageDescription": "Choose your driver profile photo"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#E53935"
+      },
+      "package": "com.emergent.fleetridehub.mk7jvh",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-image.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      "expo-font",
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose your driver profile photo",
+          "cameraPermission": "Take your driver profile selfie"
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-status-bar",
+      "@react-native-vector-icons/ionicons",
+      "expo-sharing",
+      "expo-notifications",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Show customers where you are during trips"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -5,23 +5,19 @@ import { FlatList, RefreshControl, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
-import { useAuth } from "@/src/auth";
 import { space, useTheme } from "@/src/theme";
 import { Card, Empty, Header, Loader, Txt } from "@/src/ui";
 
 export default function Notifications() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
   const q = useQuery({ queryKey: ["notifications"], queryFn: () => api<any>("/notifications") });
   useEffect(() => {
     api("/notifications/read", { body: {} }).catch(() => {});
   }, []);
   const open = (n: any) => {
     if (!n.booking_id) return;
-    if (user?.role === "driver") router.push(`/trip/${n.booking_id}` as any);
-    else if (["customer", "corporate"].includes(user?.role ?? "")) router.push(`/booking/${n.booking_id}` as any);
-    else router.push(`/erp/booking/${n.booking_id}` as any);
+    router.push(`/booking/${n.booking_id}` as any);
   };
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>

@@ -36,7 +36,7 @@ export default function CustomerHome() {
   const bookings = useQuery({ queryKey: ["my-bookings"], queryFn: () => api<any[]>("/bookings"), enabled: !!user });
   const notif = useQuery({ queryKey: ["notifications"], queryFn: () => api<any>("/notifications"), enabled: !!user });
   if (!ready) return <Loader />;
-  if (!user) return <Redirect href="/login" />;
+  if (!user || !["customer", "corporate"].includes(user.role)) return <Redirect href="/login" />;
   const all = bookings.data ?? [];
   const upcoming = all.filter((b) => !["COMPLETED", "CANCELLED"].includes(b.status)).slice(0, 3);
   const last = all.find((b) => b.status === "COMPLETED" && b.driver_name);

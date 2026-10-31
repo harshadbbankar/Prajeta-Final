@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Pressable, View } from "react-native";
 
 import { BACKEND_URL, api } from "@/src/api";
-import { useAuth } from "@/src/auth";
+import { APP_ROLES, useAuth } from "@/src/auth";
 import { queryClient } from "@/src/query-client";
 import { fonts, space, useTheme } from "@/src/theme";
 import { Btn, Chip, Field, Row, Sheet, Txt, useToast } from "@/src/ui";
@@ -22,7 +22,7 @@ export function RatingPrompt() {
   const { user } = useAuth();
   const { colors } = useTheme();
   const toast = useToast();
-  const enabled = !!user && ["customer", "corporate"].includes(user.role);
+  const enabled = !!user && APP_ROLES.includes(user.role);
   const q = useQuery({
     queryKey: ["pending-review"],
     queryFn: () => api<{ booking: Pending | null }>("/bookings/pending-review"),
