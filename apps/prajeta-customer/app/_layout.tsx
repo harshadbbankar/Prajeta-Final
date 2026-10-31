@@ -15,6 +15,7 @@ import { RatingPrompt } from "@/src/components/RatingPrompt";
 import { Notifications } from "@/src/notifications";
 import { Btn, Txt, ToastProvider } from "@/src/ui";
 import { queryClient } from "@/src/query-client";
+import { captureReferral } from "@/src/referral";
 import { radius, space, useTheme } from "@/src/theme";
 
 // Disable logbox errors etc so that users can see the app
@@ -71,6 +72,12 @@ export default function RootLayout() {
     })();
     return () => tapSub.remove();
   }, [router]);
+
+  useEffect(() => {
+    Linking.getInitialURL().then(captureReferral);
+    const sub = Linking.addEventListener("url", (e) => captureReferral(e.url));
+    return () => sub.remove();
+  }, []);
 
   const closeNudge = async (openSettings: boolean) => {
     await AsyncStorage.setItem("pushNudgeAt", String(Date.now()));

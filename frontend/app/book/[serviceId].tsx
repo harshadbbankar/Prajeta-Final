@@ -1,7 +1,7 @@
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import { useQuery } from "@tanstack/react-query";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, View } from "react-native";
 import { KeyboardAwareScrollView, KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "@/src/api";
 import { useAuth } from "@/src/auth";
 import { TIME_SLOTS, fmtTime, nextDays, useConfig } from "@/src/hooks";
+import { clearPendingReferral, getPendingReferral } from "@/src/referral";
 import { fonts, radius, space, useTheme } from "@/src/theme";
 import { Btn, Card, CardTitle, Chip, ChipRow, Divider, Field, Header, IconTile, KV, Loader, OptionBox, Row, Tag, Txt, money, useToast } from "@/src/ui";
 
@@ -47,12 +48,44 @@ export default function BookWizard() {
   const cityId = city || cities[0]?.id || "";
   const hrs = hours ?? service?.base_hours ?? 0;
   const quote = service?.pricing_mode === "quote";
+  const now = new Date();
+  const todaySel = date === nextDays(1)[0].iso;
+  const slots = TIME_SLOTS.filter((t) => !todaySel || Number(t.slice(0, 2)) * 60 + Number(t.slice(3)) > now.getHours() * 60 + now.getMinutes() + 60);
+  // If the chosen slot has passed for today, fall back to the first available one (what the user sees selected)
+  const effTime = slots.includes(time) ? time : (slots[0] ?? time);
   const fare = useQuery({
-    queryKey: ["fare", service?.id, cityId, time, hrs, days, appliedCoupon],
+    queryKey: ["fare", service?.id, cityId, date, effTime, hrs, days, appliedCoupon],
     enabled: !!service && !!cityId && !quote,
-    queryFn: () => api<any>("/public/fare-estimate", { body: { service_id: service!.id, city_id: cityId, date, time, hours: hrs, days, coupon: appliedCoupon || null } }),
+    queryFn: () => api<any>("/public/fare-estimate", { body: { service_id: service!.id, city_id: cityId, date, time: effTime, hours: hrs, days, coupon: appliedCoupon || null } }),
     retry: false,
   });
+  useEffect(() => {
+    if (user?.name) setName((n) => n || user.name);
+  }, [user?.name]);
+
+  // Referral link: apply the saved friend's code automatically (fixed-price services only)
+  const [linkCode, setLinkCode] = useState("");
+  const serviceReady = !!service;
+  useEffect(() => {
+    if (!serviceReady || quote) return;
+    getPendingReferral().then((c) => {
+      if (!c) return;
+      setLinkCode(c);
+      setCoupon(c);
+      setAppliedCoupon(c);
+    });
+  }, [serviceReady, quote]);
+  // If the backend rejects the linked code (own code / not first booking), drop it quietly
+  useEffect(() => {
+    const msg = (fare.error as any)?.message ?? "";
+    if (linkCode && appliedCoupon === linkCode && /referral|coupon/i.test(msg)) {
+      toast(msg, "err");
+      setAppliedCoupon("");
+      setCoupon("");
+      setLinkCode("");
+      clearPendingReferral();
+    }
+  }, [fare.error, linkCode, appliedCoupon, toast]);
 
   if (!ready || !cfg.data) return <Loader />;
   if (!user) return <Redirect href={`/login?next=${encodeURIComponent(`/book/${p.serviceId}?city=${cityId}&date=${date}&time=${time}`)}` as any} />;
@@ -66,11 +99,6 @@ export default function BookWizard() {
     );
 
   const needsDest = ["pickup-drop", "outstation"].includes(service.id);
-  const now = new Date();
-  const todaySel = date === nextDays(1)[0].iso;
-  const slots = TIME_SLOTS.filter((t) => !todaySel || Number(t.slice(0, 2)) * 60 + Number(t.slice(3)) > now.getHours() * 60 + now.getMinutes() + 60);
-  // If the chosen slot has passed for today, fall back to the first available one (what the user sees selected)
-  const effTime = slots.includes(time) ? time : (slots[0] ?? time);
   const daily = service.pricing_mode === "daily";
   const maxH = service.max_hours || 12;
   const presets = daily ? [1, 2, 3, 5] : Array.from(new Set([service.min_hours, service.base_hours, service.base_hours + 2, service.base_hours + 4].map((h) => Math.min(maxH, Math.max(service.min_hours, h)))));
@@ -85,6 +113,7 @@ export default function BookWizard() {
       const b = await api<any>("/bookings", {
         body: { service_id: service.id, city_id: cityId, pickup, destination: dest, date, time: effTime, hours: hrs, days, vehicle_type: vehicle, transmission: trans, vehicle_id: vehicleId || null, notes, coupon: appliedCoupon || null, contact_name: name, idempotency_key: idem },
       });
+      if (linkCode && appliedCoupon === linkCode) clearPendingReferral();
       toast(quote ? "Quote requested" : "Booking created — pay advance to confirm");
       router.replace(`/booking/${b.id}` as any);
     } catch (e: any) {

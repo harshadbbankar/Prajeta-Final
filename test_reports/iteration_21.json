@@ -1,0 +1,29 @@
+{
+  "summary": "Frontend-only retest (375x667) of the Prajeta Customer Expo app against PRODUCTION backend https://fleetride-hub.emergent.host. All 5 fixes from iteration 20 verified PASS, regression PASS. (1) Direct hard-load of /book/hourly at 19:42 UTC: the displayed slot is 'Today, 9:00 PM' and the fare-estimate body sends time '21:00' (effTime), not the raw '10:00'. Choosing 22:00 sends time '22:00', and the fare goes from Rs518 to Rs778 because of the night surcharge. (2) Changing the date to Mon 2 Nov refetches the fare with date '2026-11-02'. (3) The own-code rejection toast 'You can't use your own referral code' shows with the error background rgb(229,57,53). (4) Contact name is pre-filled with 'Ananya Shah (Demo Customer)' on a direct load. (5) Home page: exactly 1 GET /api/bookings/pending-review (404) in 52s, with no retries and no 20s polling. Regression: the UI login 9000000003/123456 lands on /customer. Referral code PRJ8YK6Z. The More share text and the WhatsApp share URL both include <origin>/?ref=PRJ8YK6Z. Opening /?ref=PRJ8YK6Z saves pending_ref and redirects to /customer. On /book/hourly the code is auto-applied (400), then the field is cleared ('Apply'), pending_ref is removed, the fare is Rs518 and 'Review & Pay Rs104 Advance' is enabled. No bookings were created. No deprecated Expo packages were seen in the reviewed files.",
+  "backend_issues": {"critical": [], "minor": [
+    {"endpoint": "GET /api/bookings/pending-review", "issue": "Production still returns 404 (older backend deploy). The app now handles this gracefully: 1 call per app load."}
+  ]},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "book/[serviceId] (direct load)", "issues": ["INFO: without a ?city param the city defaults to cities[0] (Bengaluru), while the home header showed Mumbai. This is the same as before and only affects deep links or hard loads."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "OPTIONAL/INFO: on direct /book links, default the city to the user's selected city instead of cities[0].",
+    "INFO: the first login attempt hit 'Too many OTP requests. Please wait 10 minutes.' on production, probably from main-agent logins just before. The login worked after waiting."
+  ],
+  "critical_code_review_comments": [
+    "book/[serviceId].tsx: the fare request fires once with coupon=null before getPendingReferral resolves, then again with the link code. This is harmless (cached) and adds one extra request."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend only)", "frontend": "100%"},
+  "seed_data_creation": "None. No bookings were created on production.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Production backend. The demo customer's own referral code is PRJ8YK6Z. The OTP rate limit is strict: log in once via the UI, read localStorage 'auth_token' (a JSON string), and inject it into later browser sessions with localStorage.setItem before page.goto. pending_ref is localStorage key 'pending_ref'. Browser TZ is UTC.",
+  "rca_of_issue": ""
+}

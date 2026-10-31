@@ -108,3 +108,9 @@ User choices: name Prajeta · phone login via WhatsApp OTP · Razorpay test mode
 - EXPO_PUBLIC_BACKEND_URL=https://fleetride-hub.preview.emergentagent.com (existing remote backend; no new backend/db)
 - Verified: login renders, API calls hit remote backend, no CORS errors, no driver/admin/erp routes
 - Fix: support screen skips /api/tickets when logged out
+
+## Jun 2026 update
+- Backend switched to production: EXPO_PUBLIC_BACKEND_URL=https://fleetride-hub.emergent.host
+- Refer a friend: share message includes link (/?ref=CODE); app saves code on open and auto-applies it on fixed-price booking; rejected codes cleared with toast
+- Demo customer for full booking check: 9000000003 / OTP 123456 (see test_credentials.md)
+- Android push: waiting on google-services.json (user skipped)

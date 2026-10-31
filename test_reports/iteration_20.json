@@ -1,0 +1,43 @@
+{
+  "summary": "Frontend-only browser test (375x667) of the standalone Prajeta Customer Expo app against the PRODUCTION backend https://fleetride-hub.emergent.host. Every /api call went to fleetride-hub.emergent.host. No CORS errors and no failed requests. PASS: login with demo customer 9000000003 / 123456 lands on /customer. Home ReferralCard shows code PRJ8YK6Z. The WhatsApp share (api.whatsapp.com/send) and the More share (navigator.share) both contain <origin>/?ref=PRJ8YK6Z. Opening /?ref=PRJ8YK6Z saves pending_ref, and this works logged in and logged out (it survives the redirect to /login and the login itself). Quote service /book/monthly has no coupon field, makes no fare call and keeps pending_ref. Fixed-price /book/hourly sends a fare-estimate with coupon=PRJ8YK6Z. The backend returns 400 'You can't use your own referral code'. The app shows a toast, clears the field (button back to 'Apply'), refetches the fare without a coupon (Rs 518 total, 'Review & Pay Rs 104 Advance' enabled) and removes pending_ref. An invalid link code (zzzbad99 becomes ZZZBAD99, 'Invalid or expired coupon') is also auto-cleared. A manually typed bad coupon is NOT auto-cleared: it shows the fare error and the submit button is disabled, as designed. Logged-out /support makes 0 /api/tickets calls and shows 'No tickets yet' right away. No bookings were created on production. Issues found: (1) fare is estimated with the raw `time` param instead of the displayed effTime, which can hide the night surcharge; (2) the rejection toast uses the success style; (3) contact name is empty after a hard load or deep link; (4) GET /api/bookings/pending-review returns 404 and is retried/polled repeatedly; (5) the fare queryKey is missing `date`. No deprecated Expo packages detected.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/bookings/pending-review (production)", "issue": "Returns 404 for the logged-in demo customer, who has no pending review. RatingPrompt polls it every 20s and react-query retries 3x on each failure, so every home load shows 4x 404 console errors. Either the backend should return 200 {booking:null}, or the query should set retry:false and treat 404 as null. Could not inspect the response body because the demo OTP got rate-limited (see below)."},
+      {"endpoint": "POST /api/auth/otp/send (production, demo phone)", "issue": "After 4 sends within about 3 minutes, the demo number 9000000003 returns 'Too many OTP requests. Please wait 10 minutes.' Testers/reviewers using the demo account can lock themselves out. Consider exempting demo phones."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "BookWizard referral auto-reject toast", "issue": "toast(msg) at app/book/[serviceId].tsx:74 uses the default 'ok' kind, so 'You can't use your own referral code' shows with a green checkmark (success style). Use toast(msg, 'err').", "testID": "toast-message", "priority": "LOW"},
+      {"component": "BookWizard contact name", "issue": "useState(user?.name ?? '') at app/book/[serviceId].tsx:43 runs before auth is ready on a hard load or deep link (e.g. /book/hourly opened directly or from a shared link), so 'Contact name' is empty. In-app navigation pre-fills 'Ananya Shah (Demo Customer)' correctly. Sync the field with a useEffect when user loads.", "testID": "book-name-input", "priority": "LOW"}
+    ],
+    "integration_issues": [
+      {"flow": "Fare estimate vs booked time", "issue": "The fare query (app/book/[serviceId].tsx:52-54) sends `time` (URL param or default '10:00'), but the UI shows and submit() books `effTime` (the first future slot when today's 10:00 has passed). Seen in the browser: /book/hourly and /book/night opened directly showed 'Today, 8:30 PM' while the fare request had time '10:00'. Curl to the production backend confirms the price depends on time: a 23:00 start adds 'Night surcharge (10 PM - 6 AM)' (total 77750 vs 51790 paise). So users can be shown a fare without the night surcharge and then booked with it. Use effTime in both the queryKey and the body. This affects direct links, /book/full-day from 'schedule later', quick rebook and the referral deep-link flow.", "affected_testIDs": ["fare-total", "book-start-summary", "book-submit-button"]},
+      {"flow": "Fare estimate refresh on date change", "issue": "The fare queryKey ['fare', service.id, cityId, time, hrs, days, appliedCoupon] leaves out `date` even though date is in the request body, so changing the date chip does not refetch. Add date (and effTime) to the key.", "affected_testIDs": ["fare-total"]}
+    ],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "HIGH: app/book/[serviceId].tsx fare query: replace `time` with `effTime` in the queryKey and body, and add `date` to the queryKey. Compute effTime before the query (move the slots/effTime calculation above useQuery).",
+    "LOW: app/book/[serviceId].tsx:74 call toast(msg, 'err') for the rejected referral code.",
+    "LOW: pre-fill the contact name when user becomes available, e.g. useEffect(() => { if (user?.name && !name) setName(user.name) }, [user]).",
+    "LOW: RatingPrompt pending-review query: set retry:false (or map 404 to {booking:null}) to stop the 404 retry storm. Check why production returns 404 for a customer with no pending review.",
+    "INFO: the demo OTP number is rate-limited on production (4 sends in about 3 min). Consider whitelisting demo phones."
+  ],
+  "critical_code_review_comments": [
+    "src/referral.ts: capture/validate regex ^[A-Z0-9-]{3,20}$ with uppercase normalisation works. Pending ref is kept for quote services and only cleared on a referral/coupon rejection or after a successful booking. Good.",
+    "The auto-apply effect fires one extra fare call with coupon=null before AsyncStorage resolves (3 calls per screen open). Harmless, but it could be avoided by waiting until the pending ref is loaded.",
+    "If the user taps 'Remove' on an auto-applied valid friend's code, linkCode stays set but pending_ref is not cleared, so it will auto-apply again on the next booking screen. That is acceptable and arguably desired.",
+    "No deprecated Expo packages (expo-av, expo-barcode-scanner, expo-background-fetch) were found, and no react-native SafeAreaView imports."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend only, production backend)", "frontend": "7/7 requested checks passed; 5 additional issues found (1 HIGH)"},
+  "seed_data_creation": "None. No bookings, tickets or enquiries were created on production. Only demo OTP logins (no message sent) and read-only fare estimates.",
+  "test_credentials": "/app/memory/test_credentials.md present. It says remote backend fleetride-hub.preview.emergentagent.com, but the app now uses fleetride-hub.emergent.host; the demo creds work on production.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Preview: https://prajeta-customer--8n0cd024.preview.emergentagent.com, backend is PRODUCTION fleetride-hub.emergent.host (ignore /app/backend). The demo customer's own referral code is PRJ8YK6Z. The demo customer already has bookings. Watch the OTP rate limit (max about 4 sends per 10 min). Use one login per browser session and page.goto inside the same session (the auth token persists in localStorage). pending_ref is stored as localStorage key 'pending_ref' (JSON string)."
+}

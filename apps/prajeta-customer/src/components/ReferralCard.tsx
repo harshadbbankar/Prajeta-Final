@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Share, View } from "react-native";
 
 import { api } from "@/src/api";
+import { referralLink } from "@/src/referral";
 import { radius, space, useTheme } from "@/src/theme";
 import { Btn, Card, Row, Txt, money } from "@/src/ui";
 import { openWhatsApp } from "@/src/whatsapp";
@@ -13,7 +14,7 @@ export function ReferralCard({ compact }: { compact?: boolean }) {
   const q = useQuery({ queryKey: ["referral"], queryFn: () => api<any>("/me/referral") });
   const r = q.data;
   if (!r) return null;
-  const msg = `Book a verified driver for your own car with Prajeta! Use my code ${r.code} for ${money(r.friend_amount)} off your first booking.`;
+  const msg = `Book a verified driver for your own car with Prajeta! Use my code ${r.code} for ${money(r.friend_amount)} off your first booking: ${referralLink(r.code)}`;
   return (
     <Card testID="referral-card" style={{ gap: space.sm, borderColor: colors.success, borderWidth: 1.5 }}>
       <Row>

@@ -27,7 +27,9 @@ export function RatingPrompt() {
     queryKey: ["pending-review"],
     queryFn: () => api<{ booking: Pending | null }>("/bookings/pending-review"),
     enabled: enabled && !doneThisSession,
-    refetchInterval: 20000,
+    retry: false,
+    // Stop polling if the backend doesn't offer this (e.g. older deploy returns 404)
+    refetchInterval: (query) => (query.state.error ? false : 20000),
   });
   const [, rerender] = useState(0);
   const [rating, setRating] = useState(5);
