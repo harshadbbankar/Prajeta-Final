@@ -114,3 +114,8 @@ User choices: name Prajeta · phone login via WhatsApp OTP · Razorpay test mode
 - Refer a friend: share message includes link (/?ref=CODE); app saves code on open and auto-applies it on fixed-price booking; rejected codes cleared with toast
 - Demo customer for full booking check: 9000000003 / OTP 123456 (see test_credentials.md)
 - Android push: waiting on google-services.json (user skipped)
+
+## Deploy fix (Jun 2026)
+- backend/requirements.txt: removed conflicting, unused emergentintegrations==0.2.2 + litellm wheel (pip ResolutionImpossible -> razorpay missing -> CrashLoopBackOff)
+- frontend/yarn.lock regenerated (frozen-lockfile install passes)
+- Open production-safety items: demo OTP bypass for owner/ops numbers, dev_code returned when Twilio unset, no in-app account deletion
