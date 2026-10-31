@@ -10,7 +10,6 @@ import logging
 from datetime import timedelta
 from typing import Optional
 
-import razorpay
 from pymongo.errors import DuplicateKeyError
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
@@ -65,6 +64,11 @@ def twilio_enabled() -> bool:
 def rzp_client():
     if not (RZP_KEY and RZP_SECRET):
         raise HTTPException(503, "Online payments are not configured yet. Please contact support.")
+    try:
+        import razorpay  # lazy: never block server start-up if the package is missing
+    except ImportError:
+        logger.error("razorpay package is not installed")
+        raise HTTPException(503, "Online payments are temporarily unavailable. Please contact support.")
     return razorpay.Client(auth=(RZP_KEY, RZP_SECRET))
 
 

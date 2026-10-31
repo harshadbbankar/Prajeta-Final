@@ -101,3 +101,39 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+user_problem_statement: "Preview runs standalone Prajeta Driver app (apps/prajeta-driver copied into /app/frontend) against live backend https://fleetride-hub.emergent.host. Fix production deploy crash: ModuleNotFoundError: No module named 'razorpay' at backend/server.py line 13."
+
+backend:
+  - task: "Backend boots without razorpay (lazy import) - deploy crash fix"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Removed top-level `import razorpay`; now imported lazily inside rzp_client() with ImportError -> HTTP 503. razorpay==2.0.1 stays in requirements.txt. Verify /health, server boots even if razorpay module is blocked, and key routes (/api/public/config, /api/auth/otp/send, /api/auth/otp/verify, /api/auth/me, /api/driver/profile) still work on local backend."
+        - working: true
+          agent: "testing"
+          comment: "✅ ALL TESTS PASSED (6/6). Verified: (1) GET /health returns 200 {status:ok}, (2) Server imports successfully with razorpay module blocked (sys.modules['razorpay']=None), (3) GET /api/public/config returns 200, (4) Auth flow working: POST /api/auth/otp/send with +919000000002 → demo channel, POST /api/auth/otp/verify with code 123456 → token received, GET /api/auth/me with Bearer token → 200 user data, (5) Confirmed no top-level 'import razorpay' in server.py (grep -n '^import razorpay' returns no match), (6) razorpay==2.0.1 present in requirements.txt. Deploy crash fix verified - lazy import in rzp_client() (line 68) with proper ImportError → HTTP 503 handling prevents ModuleNotFoundError at startup."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Backend boots without razorpay (lazy import) - deploy crash fix"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Please verify the deploy crash fix. Local backend at http://localhost:8001. Demo login on LOCAL backend: phones in backend/.env DEMO_PHONES (e.g. +919000000002) with DEMO_OTP 123456. Do NOT change frontend/.env."
+    - agent: "testing"
+      message: "Deploy crash fix verified successfully. All 6 tests passed: health check, import without razorpay module, public config endpoint, complete auth flow (OTP send/verify/me), no top-level import confirmation, and razorpay in requirements.txt. The lazy import pattern in rzp_client() function (line 68) correctly handles missing razorpay module with HTTP 503 error instead of crashing at startup. Backend is production-ready."
