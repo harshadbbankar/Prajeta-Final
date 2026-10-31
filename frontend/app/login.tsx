@@ -5,23 +5,30 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/src/api";
-import { homeFor, useAuth, User } from "@/src/auth";
+import { APP_ROLE, APP_ROLES, homeFor, useAuth, User } from "@/src/auth";
 import { exchangeSession, startGoogleLogin } from "@/src/googleAuth";
 import { space, radius, useTheme } from "@/src/theme";
-import { BrandLogo, Btn, Card, Chip, Field, Header, Row, Txt, useToast } from "@/src/ui";
+import { BrandLogo, Btn, Card, Field, Header, Row, Txt, useToast } from "@/src/ui";
 
 export default function Login() {
-  const params = useLocalSearchParams<{ role?: string; next?: string }>();
+  const params = useLocalSearchParams<{ next?: string }>();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { signIn, user, authError, clearAuthError } = useAuth();
+  const { signIn, signOut, user, authError, clearAuthError } = useAuth();
   const [gBusy, setGBusy] = useState(false);
+  const [wrongApp, setWrongApp] = useState("");
   useEffect(() => {
     if (!user) return;
-    if (params.next && ["customer", "corporate"].includes(user.role)) router.replace(params.next as any);
+    if (!APP_ROLES.includes(user.role)) {
+      // This app serves drivers only; send other accounts to the right app
+      setWrongApp(["customer", "corporate"].includes(user.role) ? "This is a customer account. Please use the Prajeta app to book a driver." : "Staff accounts use the Prajeta ERP.");
+      signOut();
+      return;
+    }
+    if (params.next) router.replace(params.next as any);
     else router.replace(homeFor(user.role) as any);
-  }, [user, params.next]);
+  }, [user, params.next, signOut]);
   const google = async () => {
     setErr("");
     clearAuthError();
@@ -40,7 +47,7 @@ export default function Login() {
       setGBusy(false);
     }
   };
-  const [role, setRole] = useState(params.role === "driver" ? "driver" : "customer");
+  const role = APP_ROLE;
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -84,20 +91,17 @@ export default function Login() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
-      <Header title="Log in or sign up" subtitle="Secure login with WhatsApp OTP" />
+      <Header title="Driver partner login" subtitle="Prajeta Driver · secure WhatsApp OTP" back={false} />
       <KeyboardAwareScrollView bottomOffset={24} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: space.lg, gap: space.lg, paddingBottom: insets.bottom + space.xl }}>
-        <BrandLogo size={40} testID="login-brand" />
+        <BrandLogo size={40} sub="Driver partner" testID="login-brand" />
         <Txt v="title">{step === "phone" ? "Enter your mobile number" : "Enter verification code"}</Txt>
+        {wrongApp ? (
+          <Card tone="grey" testID="login-wrong-app">
+            <Txt v="bodyBold" color={colors.brandPrimary}>{wrongApp}</Txt>
+          </Card>
+        ) : null}
         {step === "phone" ? (
           <>
-            <View style={{ gap: space.sm }}>
-              <Txt v="label">I want to</Txt>
-              <Row>
-                <Chip label="Book a driver" icon="person" selected={role === "customer"} onPress={() => setRole("customer")} testID="login-role-customer" />
-                <Chip label="Work as a driver" icon="car" selected={role === "driver"} onPress={() => setRole("driver")} testID="login-role-driver" />
-              </Row>
-              <Txt v="caption">Existing accounts keep their role. Staff accounts are created by the admin.</Txt>
-            </View>
             <Field label="Full name (new users)" placeholder="e.g. Ananya Shah" value={name} onChangeText={setName} testID="login-name-input" />
             <View style={{ gap: space.xs }}>
               <Txt v="label">Mobile number</Txt>
@@ -118,14 +122,14 @@ export default function Login() {
               <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
             </Row>
             <Btn
-              title={role === "driver" ? "Continue with Google as a driver" : "Continue with Google"}
+              title="Continue with Google"
               icon="logo-google"
               variant="outline"
               loading={gBusy}
               onPress={google}
               testID="login-google-button"
             />
-            <Txt v="caption">Google sign-in is for customers and drivers. Add your mobile number later in Profile — it&apos;s needed before booking or applying as a driver.</Txt>
+            <Txt v="caption">Add your mobile number later in Profile — it&apos;s needed before applying as a driver.</Txt>
             <Txt v="caption">By continuing you agree to our Terms and Privacy Policy and consent to receive a verification message on WhatsApp.</Txt>
           </>
         ) : (

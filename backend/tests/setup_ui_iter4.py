@@ -1,7 +1,7 @@
 # Seed helper for iteration-4 UI test: completed-unrated booking + verify the ACCEPTED tracking booking
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
-os.environ.setdefault("EXPO_BACKEND_URL", "https://fleetride-hub.preview.emergentagent.com")
+os.environ.setdefault("EXPO_BACKEND_URL", "https://fleetride-driver--8osphyd3.preview.emergentagent.com")
 import requests
 from test_tracking_ratings_invoice import BASE_URL, H, login, new_booking, to_accepted
 

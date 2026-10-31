@@ -102,3 +102,8 @@ User choices: name Prajeta · phone login via WhatsApp OTP · Razorpay test mode
 - Backend: GET /api/bookings/pending-review (latest COMPLETED unrated trip, last 14 days).
 - Component: src/components/RatingPrompt.tsx (mounted in root _layout) in /app/apps/prajeta-customer and mirrored in /app/frontend (preview).
 - Android push: still waiting for google-services.json (user skipped).
+
+## Oct 2026 - Preview switched to standalone Driver app
+- /app/frontend now = apps/prajeta-driver (standalone). Previous combined app saved to apps/prajeta-combined.
+- frontend/.env EXPO_PUBLIC_BACKEND_URL=https://fleetride-hub.emergent.host (live backend). Local /app/backend left untouched and unused.
+- Verified: driver login (on-screen preview code) -> /driver dashboard, all API calls 200 against the live backend.

@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "Prajeta",
-    "slug": "frontend",
+    "name": "Prajeta Driver",
+    "slug": "prajeta-driver",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "prajeta",
+    "scheme": "prajetadriver",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.emergent.fleetridehub.mk7jvh",
+      "bundleIdentifier": "com.prajeta.driver",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Show customers where you are during trips",
         "NSCameraUsageDescription": "Take your driver profile selfie",
@@ -21,8 +21,12 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#E53935"
       },
-      "package": "com.emergent.fleetridehub.mk7jvh",
-      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "CAMERA"]
+      "package": "com.prajeta.driver",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro",

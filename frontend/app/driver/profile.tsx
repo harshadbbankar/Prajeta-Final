@@ -6,7 +6,7 @@ import { DriverAvatar, DriverPhotoCard } from "@/src/components/DriverPhotoCard"
 import { MyRatings } from "@/src/components/MyRatings";
 import { space } from "@/src/theme";
 import { Btn, Card, Row, StatusBadge, Txt } from "@/src/ui";
-import { ProfileScreen } from "../customer/profile";
+import { ProfileScreen } from "@/src/components/ProfileScreen";
 
 export default function DriverProfile() {
   const q = useQuery({ queryKey: ["driver-profile"], queryFn: () => api<any>("/driver/profile") });

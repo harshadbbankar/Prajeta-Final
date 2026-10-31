@@ -37,7 +37,7 @@ export default function DriverHome() {
   usePolling(refetchAll, 15000, profile.data?.status === "APPROVED");
 
   if (!ready) return <Loader />;
-  if (!user) return <Redirect href="/login?role=driver" />;
+  if (!user || user.role !== "driver") return <Redirect href="/login" />;
   if (profile.isLoading) return <Loader />;
   const p = profile.data;
   const approved = p?.status === "APPROVED";

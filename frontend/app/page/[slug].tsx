@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -96,7 +96,7 @@ export default function InfoPage() {
             <Txt v="body">Hours: {s.business_hours}</Txt>
             <Row style={{ flexWrap: "wrap" }}>
               <Btn title="WhatsApp" icon="logo-whatsapp" variant="success" testID="contact-whatsapp-button" onPress={() => s.whatsapp_link && Linking.openURL(s.whatsapp_link)} />
-              <Btn title="Send enquiry" variant="outline" testID="contact-enquiry-button" onPress={() => Linking.openURL(Linking.createURL("/enquiry?type=contact"))} />
+              <Btn title="Message support" variant="outline" testID="contact-enquiry-button" onPress={() => router.push("/support")} />
             </Row>
           </View>
         ) : null}
